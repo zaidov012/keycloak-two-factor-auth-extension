@@ -56,7 +56,11 @@ public class User2FAResource {
         }
 
         final RealmModel realm = this.session.getContext().getRealm();
-        final CredentialModel credentialModel = session.userCredentialManager().getStoredCredentialByNameAndType(realm, user, submission.getDeviceName(), OTPCredentialModel.TYPE);
+
+        final CredentialModel credentialModel = user.credentialManager()
+                .getStoredCredentialByNameAndType(
+                        submission.getDeviceName(),
+                        OTPCredentialModel.TYPE);
         if (credentialModel == null) {
             throw new BadRequestException("device not found");
         }
@@ -65,7 +69,8 @@ public class User2FAResource {
             var otpCredentialProvider = session.getProvider(CredentialProvider.class, "keycloak-otp");
             final OTPCredentialModel otpCredentialModel = OTPCredentialModel.createFromCredentialModel(credentialModel);
             final String credentialId = otpCredentialModel.getId();
-            isCredentialsValid = session.userCredentialManager().isValid(realm, user, new UserCredentialModel(credentialId, otpCredentialProvider.getType(), submission.getTotpCode()));
+            isCredentialsValid = user.credentialManager()
+                    .isValid( new UserCredentialModel(credentialId, otpCredentialProvider.getType(), submission.getTotpCode()));
         } catch (RuntimeException e) {
             e.printStackTrace();
             throw new InternalServerErrorException("internal error");
@@ -95,7 +100,7 @@ public class User2FAResource {
         }
 
         final RealmModel realm = this.session.getContext().getRealm();
-        final CredentialModel credentialModel = session.userCredentialManager().getStoredCredentialByNameAndType(realm, user, submission.getDeviceName(), OTPCredentialModel.TYPE);
+        final CredentialModel credentialModel = user.credentialManager().getStoredCredentialByNameAndType(submission.getDeviceName(), OTPCredentialModel.TYPE);
         if (credentialModel != null && !submission.isOverwrite()) {
             throw new ForbiddenException("2FA is already configured for device: " + submission.getDeviceName());
         }
