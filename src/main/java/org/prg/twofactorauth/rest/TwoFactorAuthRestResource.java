@@ -1,11 +1,10 @@
 package org.prg.twofactorauth.rest;
 
+import jakarta.ws.rs.*;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.UserModel;
 import org.keycloak.services.managers.AppAuthManager;
 import org.keycloak.services.managers.AuthenticationManager;
-
-import javax.ws.rs.*;
 
 public class TwoFactorAuthRestResource {
 
@@ -30,8 +29,6 @@ public class TwoFactorAuthRestResource {
             var auth = new AppAuthManager.BearerTokenAuthenticator(session);
             auth.authenticate();
             throw new NotAuthorizedException("Bearer");
-        } else if (auth.getUser().getServiceAccountClientLink() == null) {
-            throw new ForbiddenException("Not service account");
         } else if (auth.getToken().getRealmAccess() == null || !auth.getToken().getRealmAccess().isUserInRole("manage-2fa")) {
             throw new ForbiddenException("Does not have realm manage-2fa role");
         }
@@ -39,9 +36,6 @@ public class TwoFactorAuthRestResource {
         final UserModel user = this.session.users().getUserById(this.session.getContext().getRealm(), userid);
         if (user == null) {
             throw new BadRequestException("invalid user");
-        }
-        if (user.getServiceAccountClientLink() != null) {
-            throw new ForbiddenException("Cannot manage 2fa of service account");
         }
 
         return user;

@@ -1,24 +1,25 @@
 package org.prg.twofactorauth.rest;
 
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.Response;
 import org.jboss.resteasy.annotations.cache.NoCache;
 import org.keycloak.credential.CredentialModel;
 import org.keycloak.credential.CredentialProvider;
-import org.prg.twofactorauth.dto.TwoFactorAuthSecretData;
-import org.prg.twofactorauth.dto.TwoFactorAuthSubmission;
-import org.prg.twofactorauth.dto.TwoFactorAuthVerificationData;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserCredentialModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.models.credential.OTPCredentialModel;
+import org.keycloak.models.credential.PasswordCredentialModel;
 import org.keycloak.models.utils.Base32;
 import org.keycloak.models.utils.HmacOTP;
+import org.keycloak.services.ForbiddenException;
 import org.keycloak.utils.CredentialHelper;
+import org.keycloak.utils.MediaType;
 import org.keycloak.utils.TotpUtils;
-
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import org.prg.twofactorauth.dto.TwoFactorAuthSecretData;
+import org.prg.twofactorauth.dto.TwoFactorAuthSubmission;
+import org.prg.twofactorauth.dto.TwoFactorAuthVerificationData;
 
 public class User2FAResource {
 
@@ -45,43 +46,7 @@ public class User2FAResource {
         return Response.ok(new TwoFactorAuthSecretData(totpSecretEncoded, totpSecretQrCode)).build();
     }
 
-    @POST
-    @NoCache
-    @Path("validate-2fa-code")
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response validate2FACode(final TwoFactorAuthVerificationData submission) {
-        if (!submission.isValid()) {
-            throw new BadRequestException("one or more data field for otp validation are blank");
-        }
 
-        final RealmModel realm = this.session.getContext().getRealm();
-
-        final CredentialModel credentialModel = user.credentialManager()
-                .getStoredCredentialByNameAndType(
-                        submission.getDeviceName(),
-                        OTPCredentialModel.TYPE);
-        if (credentialModel == null) {
-            throw new BadRequestException("device not found");
-        }
-        boolean isCredentialsValid;
-        try {
-            var otpCredentialProvider = session.getProvider(CredentialProvider.class, "keycloak-otp");
-            final OTPCredentialModel otpCredentialModel = OTPCredentialModel.createFromCredentialModel(credentialModel);
-            final String credentialId = otpCredentialModel.getId();
-            isCredentialsValid = user.credentialManager()
-                    .isValid( new UserCredentialModel(credentialId, otpCredentialProvider.getType(), submission.getTotpCode()));
-        } catch (RuntimeException e) {
-            e.printStackTrace();
-            throw new InternalServerErrorException("internal error");
-        }
-
-        if (!isCredentialsValid) {
-            throw new BadRequestException("invalid totp code");
-        }
-
-        return Response.noContent().build();
-    }
 
     @POST
     @NoCache

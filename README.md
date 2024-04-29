@@ -20,7 +20,7 @@ Description: Generates 2FA data for a user to setup Totp on user's device.
 
 Method: `GET`
 
-Path: `/manage-2fa/{user_id}/generate-2fa`
+Path: `http://localhost:8080/realms/<your-realm>/manage-2fa/{user_id}/generate-2fa`
 
 Response example: 
 ```json
@@ -37,7 +37,7 @@ Description: Submits 2FA data for a user to enable Totp credential for user in K
 
 Method: `POST`
 
-Path: `/manage-2fa/{user_id}/submit-2fa`
+Path: `http://localhost:8080/realms/<your-realm>/manage-2fa/{user_id}/submit-2fa`
 
 Request example:
 ```json
@@ -59,25 +59,26 @@ that particular device.
 If caller do not want to support multiple devices, it is perfectly fine to only pass one const device name.
 
 
-### Validate 2FA Code
-Description: Validates 2FA code submitted by user for a device.
+### Login
+Description: Login with Google Authenticator 6-digit code
 
 Method: `POST`
 
-Path: `/manage-2fa/{user_id}/validate-2fa-code`
+Path: `http://localhost:8080/realms/<your-realm>/protocol/openid-connect/token`
 
 Request example:
-```json
-{
-    "deviceName": "test",
-    "totpCode": "700945"
-}
+```curl
+curl --location 'http://localhost:808/realms/<your-realm>/protocol/openid-connect/token' \
+--header 'Content-Type: application/x-www-form-urlencoded' \
+--data-urlencode 'client_id=authenticationClientId' \
+--data-urlencode 'username=your-username' \
+--data-urlencode 'password=your-password' \
+--data-urlencode 'grant_type=password' \
+--data-urlencode 'otp=your 6 digit OTP'
 ```
-Response: On success empty response with `204` status code will be returned.
+Response: On success you get Bearer Token.
 
-`deviceName` refers to the device for which we want to enable 2FA. `totpCode` refers to 6-digit code taken from 2FA Application (Authy, Google authenticator) by user.
 
-If caller do not want to support multiple devices, it is perfectly acceptable to only pass one const device name.
 
 
 ## Creators
