@@ -1,0 +1,7 @@
+org\prg\twofactorauth\rest\TwoFactorAuthRestResource.class
+org\prg\twofactorauth\dto\TwoFactorAuthSecretData.class
+org\prg\twofactorauth\rest\User2FAResource.class
+org\prg\twofactorauth\dto\TwoFactorAuthVerificationData.class
+org\prg\twofactorauth\rest\TwoFactorAuthRealmResourceProvider.class
+org\prg\twofactorauth\rest\TwoFactorAuthRealmResourceProviderFactory.class
+org\prg\twofactorauth\dto\TwoFactorAuthSubmission.class
